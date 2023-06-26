@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contexto Clone</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+    <div class="root">
+        <div class="wrapper">
+            <div class="top-bar">
+                <div class="title">
+                    <h1>Contexto Clone</h1>
+                </div>
+            </div>
+            <div class="info-bar">
+                    <span class="label">Game: #{{ gameNum }} </span>
+                    <span class="label">Guesses: {{ guessNum }}</span>
+            </div>
+            <form>
+                    <input class="word" type="text" name="word" placeholder="type a word" autocapitalize="off"
+                           autocomplete="off" enterkeyhint="send" value="">
+            </form>
+            <div class="message">
+                <div class="message-text">{{ messageText }}</div>
+            </div>
+            <div class="guess-history">
+                <div class="row-wrapper">
+                    <div class="outer-bar">
+                        <div class="inner-bar" style="width: 50%; background-color: var(--yellow);"></div>
+                    </div>
+                    <div class="row">
+                        <span>Sample Guess</span>
+                        <span>{{ wordAccuracy }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
