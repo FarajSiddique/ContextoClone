@@ -17,7 +17,7 @@
                     <span class="label">Game: #{{ gameNum }} </span>
                     <span class="label">Guesses: {{ guessNum }}</span>
             </div>
-            <form>
+            <form action="{{ url_for("getSimScore") }}" method="post" >
                     <input class="word" type="text" name="word" placeholder="type a word" autocapitalize="off"
                            autocomplete="off" enterkeyhint="send" value="">
             </form>
@@ -32,8 +32,6 @@
                     <div class="row">
                         <span>Sample Guess</span>
                         <span>{{ wordAccuracy }}</span>
-
-                        <h1>Testing commit</h1>
                     </div>
                 </div>
             </div>
