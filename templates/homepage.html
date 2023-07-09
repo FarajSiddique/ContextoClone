@@ -25,15 +25,18 @@
                 <div class="message-text">{{ messageText }}</div>
             </div>
             <div class="guess-history">
-                <div class="row-wrapper">
+                {% for guess, data in guesses.items() %}
+                    <div class="row-wrapper">
                     <div class="outer-bar">
-                        <div class="inner-bar" style="width: 50%; background-color: var(--yellow);"></div>
+                        <div class="inner-bar" style="width: {{ data['bar_width'] }}%; background-color: {{ data['bar_color'] }};"></div>
                     </div>
                     <div class="row">
-                        <span>Sample Guess</span>
-                        <span>{{ wordAccuracy }}</span>
+                        <span>{{ guess }}</span>
+                        <span>{{ data['sim_score'] }}</span>
                     </div>
                 </div>
+                {% endfor %}
+
             </div>
         </div>
     </div>

@@ -1,46 +1,40 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 from pattern.text.en import singularize
 import torch
 import torchtext
 import math
+import secrets
 
 app = Flask(__name__)
+app.secret_key = secrets.token_hex(16)  # Authenticate session per user to ensure security
+
 target_word = "helicopter"
 glove = torchtext.vocab.GloVe(name="6B", dim=100)
 
-
-# x = glove['cat']
-# y = glove['lamp']
-# print(torch.cosine_similarity(x.unsqueeze(0), y.unsqueeze(0)))
-#
-#
-# def print_closest_words(vec, n=5):
-#     dists = torch.norm(glove.vectors - vec, dim=1)  # compute distances to all words
-#     lst = sorted(enumerate(dists.numpy()), key=lambda x: x[1])  # sort by distance
-#     for idx, difference in lst[1:n + 1]:  # take the top n
-#         print(glove.itos[idx], difference)
-#
-#
-# print_closest_words(glove["helicopter"], n=100)
-
-
-# def singularize_input(text):
-#     newText = singularize(text)
-#     return newText
+dist = torch.norm(glove.vectors - glove[target_word], dim=1)  # Similarity score of all words compared to target word
+lst = sorted(enumerate(dist.numpy()), key=lambda x: x[1])  # sort by distance
 
 
 @app.route('/', methods=["GET", "POST"])
 def getSimScore():
+    if 'counter' not in session:
+        session['counter'] = 0
+        session['guesses'] = {}
+        sim_score = 0
+        sorted_guesses = {}
     if request.method == "POST":
-        text = request.form.get("word")
-        new_text = singularize(text)
-        #
-        # # dist = torch.norm(glove[target_word].unsqueeze(0) - glove[new_text].unsqueeze(0), dim=1)
-        # # sim_score = int(dist.numpy()[0] * 10)
-        # # print(sim_score)
-        # sim_score = ((torch.cosine_similarity(glove[target_word], glove[new_text])).numpy()[0])
-        # print(sim_score)
-    return render_template('homepage.html', messageText='sample text', gameNum=1, guessNum=1, wordAccuracy=999)
+        session['counter'] += 1
+        text = singularize(request.form.get("word"))
+        for i, idx in enumerate(lst):
+            if glove.itos[idx[0]] == text:
+                sim_score = i
+                break
+        bar_width = getBarWidth(sim_score)
+        bar_color = getBarColor(sim_score)
+        session['guesses'][text] = {'sim_score': sim_score, 'bar_width': bar_width, 'bar_color': bar_color}
+        sorted_guesses = dict(sorted(session['guesses'].items(), key=lambda x: x[1]['sim_score']))
+    return render_template('homepage.html', messageText='sample text', gameNum=1, guessNum=session['counter'],
+                           guesses=sorted_guesses)
 
 
 def getBarWidth(distance):
@@ -58,22 +52,18 @@ def getBarWidth(distance):
     return result
 
 
+def getBarColor(distance):
+    if distance < 1000:
+        return 'var(--green)'
+    elif distance < 3000:
+        return 'var(--yellow)'
+    return 'var(--red)'
+
+
 def pdf(x):
     lmbda = 0.5
     return lmbda * math.exp(-lmbda * x)
 
-
-def getIdxDistance(word, target_word):
-    dists = torch.norm(glove.vectors - glove[target_word], dim=1)  # compute distances to all words
-    # if word == target_word:
-    #     return -1
-    lst = sorted(enumerate(dists.numpy()), key=lambda x: x[1])
-    for idx, i in enumerate(lst):
-        if glove.itos[idx] == word:
-            return idx,i
-
-
-print(getIdxDistance('helicopter', 'helicopter'))
 
 if __name__ == '__main__':
     app.run()
